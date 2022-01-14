@@ -2,13 +2,14 @@ import React, {useEffect, useState} from 'react'
 import { View, Text, StyleSheet, Platform, StatusBar, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
-export const ChatScreen = ({navigation}) => {
+
+export const StartNewChatScreen = ({navigation}) => {
 
     const [loading, setLoading] = useState(true)
     const [username, setUsername] = useState(null)
     const [users, setUsers] = useState([]);
-    const [imagesN, setImagesN] = useState([]);
     
     useEffect(() => {
 
@@ -51,7 +52,7 @@ export const ChatScreen = ({navigation}) => {
           
           const { data, error, status } = await supabase
             .from('friends')
-            .select(`user, friend_with`)
+            .select(`friend_with`)
             .match({user: username})
             const map = data.map((element) => {return element.friend_with} )
           
@@ -60,9 +61,10 @@ export const ChatScreen = ({navigation}) => {
           }
           
           if (data) {
-            setUsers(map)
-            //console.log(users)
-            return await getImagesN(map, username);
+           // setUsernames(map)
+           // console.log(map)
+           return await getUsers(map)
+           // map.map((element) => {return getUsers(element)})
             
           }
         } catch (error) {
@@ -73,23 +75,38 @@ export const ChatScreen = ({navigation}) => {
       }
 
 
-     async function getImagesN(users, user) {
+      async function getUsers(users) {
         try {
           setLoading(true)
+          const map = users.map((element) => {
+            return getSingleUser(element)
+          })
+          setTimeout(() => { setUsers(map)
+           }, 200)
+        
+        } finally {
+          setLoading(false)
+        }
+      }
+  
+      async function getSingleUser(username) {
+        try {
+          setLoading(true)
+          
           const { data, error, status } = await supabase
-            .from('post')
-            .select(`post_name, username, profile_image`)
-            .or('username.eq.'+user+', '+users.map((element) => {return 'username.eq.'+element})+'')
-            .order('created_at', {ascending: false})
-            const map = data.map((element) => {return element} )
-            
+            .from('profile')
+            .select(`display_name, profile_img_name, fullname`)
+            .match({display_name: username})
+            .single()
           if (error && status !== 406) {
             throw error
           }
           
           if (data) {
-           // console.log(map);
-            setImagesN(map);
+           // setUsernames(map)
+         // console.log(data)
+            return data
+           // map.map((element) => {return getUsers(element)})
             
           }
         } catch (error) {
@@ -99,6 +116,35 @@ export const ChatScreen = ({navigation}) => {
         }
       }
 
+      async function goToChat(element) {
+        AsyncStorage.setItem('@Username', JSON.stringify(element.display_name))
+        AsyncStorage.setItem('@User', JSON.stringify(username))
+        navigation.navigate('Chat')
+      }
+
+
+      function showUsers() {
+        if (users) {
+          return users.map((element) => {
+              //console.log(element)
+              if (element) {
+                  return <TouchableOpacity key={element._W.display_name} onPress={() => goToChat(element._W)}>
+                             <View style={styles.result}  >
+                                <Image source={{uri: element._W.profile_img_name}} style={styles.resultImg}/>
+                                <View style={styles.text}>
+                                    <Text style={styles.fullname}>{element._W.fullname}</Text>
+                                    <Text style={styles.username}>{element._W.display_name}</Text>
+                                    </View>
+                            </View>
+                            </TouchableOpacity>
+                  
+              }
+           
+          })  
+        }
+
+     
+    } 
 
 
 
@@ -111,9 +157,7 @@ export const ChatScreen = ({navigation}) => {
                 <Image style={styles.logo} source={require('../images/SM.png')}/>
             </View>
             <ScrollView style={styles.content}>
-                <TouchableOpacity style={{flexDirection: "row", justifyContent: 'space-between', marginLeft: '10%', marginRight: '10%', backgroundColor: 'white', paddingLeft: '1%', borderRadius: 20, paddingTop: '1%', paddingBottom: '1%'}}>
-                    <Text>Start new chat</Text><Icon name='add'/>
-                </TouchableOpacity>
+            {showUsers()}
 
               
                 
@@ -191,6 +235,37 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: '6%',
   },
+
+  result: {
+    marginTop: '2%',
+    width: '100%',
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderRadius: 6,
+    borderWidth: 0.5,
+    backgroundColor: 'white'
+ },
+
+ resultImg: {
+     width: '15%',
+     height: undefined,
+     aspectRatio: 1,
+     borderRadius: 6,
+     
+ },
+
+ text: {
+     marginLeft: '10%'
+ },
+ 
+ username: {
+     fontSize: 15,
+ },
+
+ fullname: {
+     fontSize: 25
+ }
+
 
 
 

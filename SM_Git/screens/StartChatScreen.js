@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Platform, StatusBar, Image, TouchableOpacity, S
 import { Icon } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
 
-export const ChatScreen = ({navigation}) => {
+export const StartChatScreen = ({navigation}) => {
 
     const [loading, setLoading] = useState(true)
     const [username, setUsername] = useState(null)
@@ -111,7 +111,8 @@ export const ChatScreen = ({navigation}) => {
                 <Image style={styles.logo} source={require('../images/SM.png')}/>
             </View>
             <ScrollView style={styles.content}>
-                <TouchableOpacity style={{flexDirection: "row", justifyContent: 'space-between', marginLeft: '10%', marginRight: '10%', backgroundColor: 'white', paddingLeft: '1%', borderRadius: 20, paddingTop: '1%', paddingBottom: '1%'}}>
+                <TouchableOpacity style={{flexDirection: "row", justifyContent: 'space-between', marginLeft: '10%', marginRight: '10%', backgroundColor: 'white', paddingLeft: '1%', borderRadius: 20, paddingTop: '1%', paddingBottom: '1%'}}
+                onPress={() => {navigation.navigate('StartNewChat')}}>
                     <Text>Start new chat</Text><Icon name='add'/>
                 </TouchableOpacity>
 

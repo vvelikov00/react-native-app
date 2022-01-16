@@ -23,7 +23,6 @@ export const StartNewChatScreen = ({navigation}) => {
       try {
         setLoading(true)
         const user = supabase.auth.user()
-        //console.log(supabase.auth.session())
         const { data, error, status } = await supabase
           .from('profile')
           .select(`display_name`)
@@ -62,7 +61,7 @@ export const StartNewChatScreen = ({navigation}) => {
           
           if (data) {
            // setUsernames(map)
-           // console.log(map)
+           //console.log(map)
            return await getUsers(map)
            // map.map((element) => {return getUsers(element)})
             
@@ -82,7 +81,8 @@ export const StartNewChatScreen = ({navigation}) => {
             return getSingleUser(element)
           })
           setTimeout(() => { setUsers(map)
-           }, 200)
+           // console.log(map)
+           }, 300)
         
         } finally {
           setLoading(false)
@@ -104,7 +104,7 @@ export const StartNewChatScreen = ({navigation}) => {
           
           if (data) {
            // setUsernames(map)
-         // console.log(data)
+          // console.log(data)
             return data
            // map.map((element) => {return getUsers(element)})
             
@@ -118,7 +118,6 @@ export const StartNewChatScreen = ({navigation}) => {
 
       async function goToChat(element) {
         AsyncStorage.setItem('@Username', JSON.stringify(element.display_name))
-        AsyncStorage.setItem('@User', JSON.stringify(username))
         navigation.navigate('Chat')
       }
 

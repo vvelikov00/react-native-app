@@ -1,31 +1,35 @@
 import React, {useEffect, useState} from 'react'
 import { View, Text, StyleSheet, Platform, StatusBar, Image, TouchableOpacity, ScrollView } from 'react-native'
-import { Icon } from 'react-native-elements'
+import { Icon, Input } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const ChatScreen = ({navigation}) => {
 
     const [loading, setLoading] = useState(true)
-    const [username, setUsername] = useState(null)
-    const [users, setUsers] = useState([]);
-    const [imagesN, setImagesN] = useState([]);
+    const [user, setUser] = useState(null)
+    const [friend, setFriend] = useState(null)
+    const [messages, setMessages] = useState([]);
     
     useEffect(() => {
 
-          getProfile()
+      const showMessages = navigation.addListener('focus', () => {
+        getUsername();
+      });
+          
          
        
        
-    }, [])
+    }, [navigation])
   
-    async function getProfile() {
+    async function getProfile(friend) {
       try {
         setLoading(true)
         const user = supabase.auth.user()
         //console.log(supabase.auth.session())
         const { data, error, status } = await supabase
           .from('profile')
-          .select(`display_name`)
+          .select(`display_name, profile_img_name, fullname`)
           .eq('id', user.id)
           .single()
         
@@ -34,9 +38,8 @@ export const ChatScreen = ({navigation}) => {
         }
         
         if (data) {
-          setUsername(data.display_name)
-          return await getFriends(data.display_name);
-          
+          setUser(data) 
+          return await getMessages(data.display_name, friend) 
         }
       } catch (error) {
         alert(error.message)
@@ -45,24 +48,30 @@ export const ChatScreen = ({navigation}) => {
       }
     }
 
-    async function getFriends(username) {
+    async function getUsername() {
+      let value = await AsyncStorage.getItem('@Username')
+      let parsed = JSON.parse(value)
+     // setUsername(parsed)
+      getFriend(parsed)
+      getProfile(parsed)
+  }
+
+    async function getFriend(username) {
         try {
-          setLoading(true)
-          
+          setLoading(true)     
           const { data, error, status } = await supabase
-            .from('friends')
-            .select(`user, friend_with`)
-            .match({user: username})
-            const map = data.map((element) => {return element.friend_with} )
-          
+            .from('profile')
+            .select(`display_name, profile_img_name, fullname`)
+            .match({display_name: username})
+            .single()
           if (error && status !== 406) {
             throw error
           }
           
           if (data) {
-            setUsers(map)
-            //console.log(users)
-            return await getImagesN(map, username);
+            setFriend(data)
+            //console.log(data)
+           // return await getImagesN(map, username);
             
           }
         } catch (error) {
@@ -73,23 +82,27 @@ export const ChatScreen = ({navigation}) => {
       }
 
 
-     async function getImagesN(users, user) {
+      async function getMessages(user, friend) {
         try {
-          setLoading(true)
+          setLoading(true)     
           const { data, error, status } = await supabase
-            .from('post')
-            .select(`post_name, username, profile_image`)
-            .or('username.eq.'+user+', '+users.map((element) => {return 'username.eq.'+element})+'')
-            .order('created_at', {ascending: false})
-            const map = data.map((element) => {return element} )
-            
+            .from('messages')
+            .select(`from, to, message`)
+            .or('from.eq.'+user+', to.eq.'+user+'')
+             const map = data.map((element) => {if (element.from === friend || element.to === friend) {return element}} )
           if (error && status !== 406) {
             throw error
           }
           
           if (data) {
-           // console.log(map);
-            setImagesN(map);
+           // console.log(friend)
+            //console.log(map)
+
+             let final = map.filter(function(element) {
+              return element !== undefined
+            });
+            setMessages(final)
+           // return await getImagesN(map, username);
             
           }
         } catch (error) {
@@ -97,8 +110,20 @@ export const ChatScreen = ({navigation}) => {
         } finally {
           setLoading(false)
         }
+        
+        
       }
 
+
+
+      function showMessages() {
+        if (messages && messages.length !== 0)
+        { 
+          return <Text>{'Message'}</Text>
+        } else {
+          return <Text>{'No messages'}</Text>
+        }
+      }
 
 
 
@@ -108,12 +133,12 @@ export const ChatScreen = ({navigation}) => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Image style={styles.logo} source={require('../images/SM.png')}/>
+            <TouchableOpacity onPress={() => {navigation.navigate('StartChat')}}>
+                    <Icon style={styles.add} size={40} name='chevron-left'/>
+                 </TouchableOpacity>
             </View>
             <ScrollView style={styles.content}>
-                <TouchableOpacity style={{flexDirection: "row", justifyContent: 'space-between', marginLeft: '10%', marginRight: '10%', backgroundColor: 'white', paddingLeft: '1%', borderRadius: 20, paddingTop: '1%', paddingBottom: '1%'}}>
-                    <Text>Start new chat</Text><Icon name='add'/>
-                </TouchableOpacity>
+              {showMessages()}  
 
               
                 
@@ -122,23 +147,7 @@ export const ChatScreen = ({navigation}) => {
                  <Text>{'\n'}</Text>
             </ScrollView>
              <View style={styles.footer}>
-                <TouchableOpacity onPress={() => {navigation.navigate('Home')}}>
-                    <Icon style={styles.add} size={40} name='home'/>
-                 </TouchableOpacity>
-                 <TouchableOpacity onPress={()=>{navigation.navigate('Add')}}>
-                     <Icon style={styles.add} size={40} name='add'/>
-                 </TouchableOpacity>
-                 <TouchableOpacity onPress={()=>{navigation.navigate('Search')}}>
-                     <Icon style={styles.add} size={40} name='search'/>
-                 </TouchableOpacity>
-                 <TouchableOpacity disabled>
-                     <Icon style={styles.add} size={20} name='chat' reverse/>
-                 </TouchableOpacity>
-                 <TouchableOpacity onPress={()=>{navigation.navigate('Profile')}}>
-                     <Icon style={styles.add} size={40} name='person'/>
-                 </TouchableOpacity>
-
-
+               <Input placeholder={'Type your message here'}/>
             </View>
         </View>
         
@@ -156,7 +165,6 @@ const styles = StyleSheet.create({
     header: {
         width: "100%",
         height: "6%",
-        alignItems: 'center',
         borderBottomColor: 'black',
         borderBottomWidth: 1,
         backgroundColor: '#fff',
@@ -170,7 +178,7 @@ const styles = StyleSheet.create({
         right: 0, 
         bottom: 0,
         width: "100%",
-        height: "6%",
+        height: "9%",
         alignItems: 'center',
         backgroundColor: '#fff',
         flexDirection: "row",
@@ -182,10 +190,7 @@ const styles = StyleSheet.create({
        height: "100%",
    },
 
-   add: {
-       alignSelf:'center',
-       
-   },
+
 
    content: {
     padding: 10,

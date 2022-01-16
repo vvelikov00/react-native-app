@@ -22,8 +22,11 @@ export const ProfileScreen = ({navigation}) => {
     const [img, setImg] = useState(null);
     const [images, setImages] = useState([]);
     useEffect(() => {
-        getUsername()
-    }, [])
+      const showProfile = navigation.addListener('focus', () => {
+        getUsername();
+      });
+        
+    }, [navigation])
   
     async function getUsername() {
         let value = await AsyncStorage.getItem('@Username')
@@ -392,7 +395,7 @@ const acceptRequestC = async () => {
                  <TouchableOpacity onPress={()=>{navigation.navigate('Search')}}>
                      <Icon style={styles.add} size={40} name='search'/>
                  </TouchableOpacity>
-                 <TouchableOpacity onPress={()=>{navigation.navigate('Chat')}}>
+                 <TouchableOpacity onPress={()=>{navigation.navigate('StartChat')}}>
                      <Icon style={styles.add} size={40} name='chat' />
                  </TouchableOpacity>
                  <TouchableOpacity onPress={()=>{navigation.navigate('Profile')}}>

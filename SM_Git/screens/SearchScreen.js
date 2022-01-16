@@ -86,7 +86,6 @@ export const SearchScreen = ({navigation}) => {
       async function getUserProfile(text) {
         try {
           setLoading(true)
-          const user = supabase.auth.user()
           
           const { data, error, status } = await supabase
             .from('profile')
@@ -178,7 +177,7 @@ export const SearchScreen = ({navigation}) => {
                  <TouchableOpacity disabled>
                      <Icon style={styles.add} reverse size={20} name='search'/>
                  </TouchableOpacity>
-                 <TouchableOpacity onPress={()=>{navigation.navigate('Chat')}}>
+                 <TouchableOpacity onPress={()=>{navigation.navigate('StartChat')}}>
                      <Icon style={styles.add} size={40} name='chat' />
                  </TouchableOpacity>
                  <TouchableOpacity onPress={()=>{navigation.navigate('Profile')}}>

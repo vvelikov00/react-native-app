@@ -158,7 +158,7 @@ export const SettingsScreen = ({navigation}) => {
                  <TouchableOpacity onPress={()=>{navigation.navigate('Search')}}>
                      <Icon style={styles.add} size={40} name='search'/>
                  </TouchableOpacity>
-                 <TouchableOpacity onPress={()=>{navigation.navigate('Chat')}}>
+                 <TouchableOpacity onPress={()=>{navigation.navigate('StartChat')}}>
                      <Icon style={styles.add} size={40} name='chat' />
                  </TouchableOpacity>
                  <TouchableOpacity onPress={()=>{navigation.navigate('Profile')}}>

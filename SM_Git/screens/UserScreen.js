@@ -84,12 +84,14 @@ export const UserScreen = ({navigation}) => {
           }
           
           if (data) {
+        
             return data.publicURL
             
             
             
           }
         })
+       // console.log(map)
         setImages(map);
       }  finally {
         setLoading(false)
@@ -170,7 +172,7 @@ export const UserScreen = ({navigation}) => {
                  <TouchableOpacity onPress={()=>{navigation.navigate('Search')}}>
                      <Icon style={styles.add} size={40} name='search'/>
                  </TouchableOpacity>
-                 <TouchableOpacity onPress={()=>{navigation.navigate('Chat')}}>
+                 <TouchableOpacity onPress={()=>{navigation.navigate('StartChat')}}>
                      <Icon style={styles.add} size={40} name='chat' />
                  </TouchableOpacity>
                  <TouchableOpacity disabled>

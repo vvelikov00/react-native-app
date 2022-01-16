@@ -14,6 +14,8 @@ export const AddScreen = ({navigation}) => {
     const [username, setUsername] = useState(null)
     const [name, setName] = useState(null)
     const [type, setType] = useState(null)
+    const [done, setDone] = useState('Done')
+    const [disable, setDisable] = useState(true)
     const [selectedValue, setSelectedValue] = useState("Photo");
     useEffect(() => {
         getProfile();
@@ -46,6 +48,8 @@ export const AddScreen = ({navigation}) => {
       }
 
       const uploadFromURI = async () => {
+        setDone('Uploading, please wait...')
+        setDisable(true)
             const ext = image.substring(image.lastIndexOf(".")+1);
 
             const fileName = image.replace(/^.*[\\\/]/, "");
@@ -78,6 +82,7 @@ export const AddScreen = ({navigation}) => {
                 .insert({post_name: fname, username: username, created_at: new Date(), profile_image: pImage})
                 if(!error)
                 
+                navigation.navigate('Home')
                 if (error) throw error
                   
               } catch (error) {
@@ -103,7 +108,8 @@ export const AddScreen = ({navigation}) => {
           if (!result.cancelled) {
             setImage(result.uri);
             setType(result.type);
-            console.log(type);
+            //console.log(type);
+            setDisable(false)
           }
         };
 
@@ -128,9 +134,9 @@ export const AddScreen = ({navigation}) => {
                    <Button onPress={async () =>{ const response = await pickImage();
                
                 } }title={'Upload photo'}/>
-      <Input placeholder={'Type some text here...'}/>
-      <Button  onPress={async () =>{uploadFromURI()} }
-      title={'Done'}/>
+      <Input placeholder={'Type some text here...(not working yet)'}/>
+      <Button disabled={disable} onPress={async () =>{uploadFromURI()} }
+      title={done}/>
                 <Text>{'\n'}</Text>
             </ScrollView>
              <View style={styles.footer}>
@@ -143,7 +149,7 @@ export const AddScreen = ({navigation}) => {
                  <TouchableOpacity onPress={()=>{navigation.navigate('Search')}}>
                      <Icon style={styles.add} size={40} name='search'/>
                  </TouchableOpacity>
-                 <TouchableOpacity onPress={()=>{navigation.navigate('Chat')}}>
+                 <TouchableOpacity onPress={()=>{navigation.navigate('StartChat')}}>
                      <Icon style={styles.add} size={40} name='chat' />
                  </TouchableOpacity>
                  <TouchableOpacity onPress={()=>{navigation.navigate('Profile')}}>

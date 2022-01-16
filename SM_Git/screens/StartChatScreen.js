@@ -2,12 +2,14 @@ import React, {useEffect, useState} from 'react'
 import { View, Text, StyleSheet, Platform, StatusBar, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export const StartChatScreen = ({navigation}) => {
 
     const [loading, setLoading] = useState(true)
     const [username, setUsername] = useState(null)
     const [users, setUsers] = useState([]);
+    const [messages, setMessages] = useState([]);
     const [imagesN, setImagesN] = useState([]);
     
     useEffect(() => {
@@ -35,7 +37,7 @@ export const StartChatScreen = ({navigation}) => {
         
         if (data) {
           setUsername(data.display_name)
-          return await getFriends(data.display_name);
+          return await getFriendsFromMessages(data.display_name);
           
         }
       } catch (error) {
@@ -45,51 +47,91 @@ export const StartChatScreen = ({navigation}) => {
       }
     }
 
-    async function getFriends(username) {
+    async function getFriendsFromMessages(username) {
         try {
           setLoading(true)
           
           const { data, error, status } = await supabase
-            .from('friends')
-            .select(`user, friend_with`)
-            .match({user: username})
-            const map = data.map((element) => {return element.friend_with} )
-          
-          if (error && status !== 406) {
-            throw error
-          }
-          
-          if (data) {
-            setUsers(map)
-            //console.log(users)
-            return await getImagesN(map, username);
-            
-          }
-        } catch (error) {
-          alert(error.message)
-        } finally {
-          setLoading(false)
-        }
-      }
-
-
-     async function getImagesN(users, user) {
-        try {
-          setLoading(true)
-          const { data, error, status } = await supabase
-            .from('post')
-            .select(`post_name, username, profile_image`)
-            .or('username.eq.'+user+', '+users.map((element) => {return 'username.eq.'+element})+'')
+            .from('messages')
+            .select(`from, to, message, created_at`)
+            .or('from.eq.'+username+', to.eq.'+username+'')
             .order('created_at', {ascending: false})
             const map = data.map((element) => {return element} )
-            
+          
           if (error && status !== 406) {
             throw error
           }
           
           if (data) {
-           // console.log(map);
-            setImagesN(map);
+            let pp = map.filter( (ele, ind) => ind === map.findIndex( elem => elem.from === ele.from && elem.to === ele.to || elem.from === ele.to))
+
+            var names = []
+
+            map.forEach(function(item) {
+              if (names.indexOf(item) === -1) {
+                names.push(item);
+              }
+          });
+          
+
+            console.log(pp)
+        
+            //console.log(uniqueNames)
+           return await getImages(pp, username);      
+          }
+        } catch (error) {
+          alert(error.message)
+        } finally {
+          setLoading(false)
+        }
+      }
+
+
+
+
+      async function getImages(users, user) {
+        try {
+          setLoading(true)
+          const map = users.map((element) => {
+            //console.log(element)
+            if (element.from === user) {
+              //console.log(element.to)
+              return getSingleUser(element.to, element.message, element.from, element.created_at)
+            } else if (element.to === user) {
+              //console.log(element.from)
+              return getSingleUser(element.from, element.message, element.from, element.created_at)
+            }
+            
+            
+          })
+          setTimeout(() => {
+
+            setMessages(map)
+           }, 300)
+        
+        } finally {
+          setLoading(false)
+        }
+      }
+  
+      async function getSingleUser(username, message, from, created_at) {
+        try {
+          setLoading(true)
+          
+          const { data, error, status } = await supabase
+            .from('profile')
+            .select(`display_name, profile_img_name, fullname`)
+            .match({display_name: username})
+            .single()
+          if (error && status !== 406) {
+            throw error
+          }
+          
+          if (data) {
+           // setUsernames(map)
+          // console.log(data)
+            return {data, message, from, created_at}
+           // map.map((element) => {return getUsers(element)})
             
           }
         } catch (error) {
@@ -100,6 +142,36 @@ export const StartChatScreen = ({navigation}) => {
       }
 
 
+      async function goToChat(element) {
+        AsyncStorage.setItem('@Username', JSON.stringify(element.data.display_name))
+
+        navigation.navigate('Chat')
+      }
+
+
+      function showMessages() {
+        if (messages) {
+          return messages.map((element) => {
+              //console.log(element)
+
+              if (element) {
+                  return <TouchableOpacity key={element._W.data.display_name} onPress={() => goToChat(element._W)}>
+                             <View style={styles.result}  >
+                                <Image source={{uri: element._W.data.profile_img_name}} style={styles.resultImg}/>
+                                <View style={styles.text}>
+                                    <Text style={styles.fullname}>{element._W.data.fullname}</Text>
+                                    <Text style={styles.username}>{element._W.from}{': '}{element._W.message}</Text>
+                                    </View>
+                            </View>
+                            </TouchableOpacity>
+                  
+              }
+
+          })  
+        }
+
+     
+    } 
 
 
   
@@ -115,8 +187,8 @@ export const StartChatScreen = ({navigation}) => {
                 onPress={() => {navigation.navigate('StartNewChat')}}>
                     <Text>Start new chat</Text><Icon name='add'/>
                 </TouchableOpacity>
+                {showMessages()}
 
-              
                 
                  
                    
@@ -192,6 +264,36 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: '6%',
   },
+
+  result: {
+    marginTop: '2%',
+    width: '100%',
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderRadius: 6,
+    borderWidth: 0.5,
+    backgroundColor: 'white'
+ },
+
+ resultImg: {
+     width: '15%',
+     height: undefined,
+     aspectRatio: 1,
+     borderRadius: 6,
+     
+ },
+
+ text: {
+     marginLeft: '10%'
+ },
+ 
+ username: {
+     fontSize: 15,
+ },
+
+ fullname: {
+     fontSize: 25
+ }
 
 
 

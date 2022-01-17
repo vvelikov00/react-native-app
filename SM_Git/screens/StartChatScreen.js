@@ -14,11 +14,11 @@ export const StartChatScreen = ({navigation}) => {
     
     useEffect(() => {
 
-          getProfile()
-         
+      const showMessages = navigation.addListener('focus', () => {
+        getProfile();
+      });
        
-       
-    }, [])
+    }, [navigation])
   
     async function getProfile() {
       try {
@@ -53,7 +53,7 @@ export const StartChatScreen = ({navigation}) => {
           
           const { data, error, status } = await supabase
             .from('messages')
-            .select(`from, to, message, created_at`)
+            .select(`from, to, message, created_at, seen`)
             .or('from.eq.'+username+', to.eq.'+username+'')
             .order('created_at', {ascending: false})
             const map = data.map((element) => {return element} )
@@ -64,19 +64,7 @@ export const StartChatScreen = ({navigation}) => {
           
           if (data) {
             let pp = map.filter( (ele, ind) => ind === map.findIndex( elem => elem.from === ele.from && elem.to === ele.to || elem.from === ele.to))
-
-            var names = []
-
-            map.forEach(function(item) {
-              if (names.indexOf(item) === -1) {
-                names.push(item);
-              }
-          });
-          
-
-            console.log(pp)
-        
-            //console.log(uniqueNames)
+            //console.log(pp)
            return await getImages(pp, username);      
           }
         } catch (error) {
@@ -93,19 +81,15 @@ export const StartChatScreen = ({navigation}) => {
         try {
           setLoading(true)
           const map = users.map((element) => {
-            //console.log(element)
             if (element.from === user) {
-              //console.log(element.to)
-              return getSingleUser(element.to, element.message, element.from, element.created_at)
+              return getSingleUser(element.to, element.message, element.from, element.seen, element.to)
             } else if (element.to === user) {
-              //console.log(element.from)
-              return getSingleUser(element.from, element.message, element.from, element.created_at)
+              return getSingleUser(element.from, element.message, element.from, element.seen, element.to)
             }
             
             
           })
           setTimeout(() => {
-
             setMessages(map)
            }, 300)
         
@@ -114,7 +98,7 @@ export const StartChatScreen = ({navigation}) => {
         }
       }
   
-      async function getSingleUser(username, message, from, created_at) {
+      async function getSingleUser(username, message, from, seen, to) {
         try {
           setLoading(true)
           
@@ -128,11 +112,7 @@ export const StartChatScreen = ({navigation}) => {
           }
           
           if (data) {
-           // setUsernames(map)
-          // console.log(data)
-            return {data, message, from, created_at}
-           // map.map((element) => {return getUsers(element)})
-            
+            return {data, message, from, seen, to}
           }
         } catch (error) {
           alert(error.message)
@@ -144,15 +124,41 @@ export const StartChatScreen = ({navigation}) => {
 
       async function goToChat(element) {
         AsyncStorage.setItem('@Username', JSON.stringify(element.data.display_name))
+        if (element.from !== username && element.seen === 'no') {
+          return await updateTable(element)
+        } else {
+          navigation.navigate('Chat')
+        }
+        
+        //console.log(element)
+      }
 
-        navigation.navigate('Chat')
+      async function updateTable(element) {
+        try {
+          setLoading(true)
+          const { data, error } = await supabase
+          .from('messages')
+          .update({seen: "yes"})
+          .match({from: element.from, to: element.to})
+          if(!error)
+          navigation.navigate('Chat')
+          if (error) throw error
+            
+        } catch (error) {
+          alert(error.error_description || error.message)
+        } finally {
+          setLoading(false)
+          
+        }
       }
 
 
       function showMessages() {
-        if (messages) {
+
+        console.log(messages.length)
+        if (messages && messages.length > 0) {
           return messages.map((element) => {
-              //console.log(element)
+              console.log(element)
 
               if (element) {
                   return <TouchableOpacity key={element._W.data.display_name} onPress={() => goToChat(element._W)}>
@@ -160,7 +166,7 @@ export const StartChatScreen = ({navigation}) => {
                                 <Image source={{uri: element._W.data.profile_img_name}} style={styles.resultImg}/>
                                 <View style={styles.text}>
                                     <Text style={styles.fullname}>{element._W.data.fullname}</Text>
-                                    <Text style={styles.username}>{element._W.from}{': '}{element._W.message}</Text>
+                                    <Text style={{fontWeight: element._W.seen === 'no' ? 'bold' : 'normal', fontSize: 15 }}>{element._W.from}{': '}{element._W.message}</Text>
                                     </View>
                             </View>
                             </TouchableOpacity>
@@ -168,6 +174,9 @@ export const StartChatScreen = ({navigation}) => {
               }
 
           })  
+        } else {
+          console.log('No messages')
+          return <Text style={{alignSelf: 'center'}}>{'No messages'}</Text>
         }
 
      
@@ -287,9 +296,6 @@ const styles = StyleSheet.create({
      marginLeft: '10%'
  },
  
- username: {
-     fontSize: 15,
- },
 
  fullname: {
      fontSize: 25

@@ -89,6 +89,7 @@ export const ChatScreen = ({navigation}) => {
             .from('messages')
             .select(`from, to, message`)
             .or('from.eq.'+user+', to.eq.'+user+'')
+            .order('created_at', {ascending: true})
              const map = data.map((element) => {if (element.from === friend || element.to === friend) {return element}} )
           if (error && status !== 406) {
             throw error
@@ -119,7 +120,22 @@ export const ChatScreen = ({navigation}) => {
       function showMessages() {
         if (messages && messages.length !== 0)
         { 
-          return <Text>{'Message'}</Text>
+         return messages.map((element) => {
+            //console.log(element)
+            if (element) {
+              if (element.from === user.display_name) {
+                console.log(element.from)
+                return <Text style={{ fontSize: 15, alignSelf: 'flex-end' }}>{element.message}</Text>
+              } else {
+                console.log(element.from)
+                return <Text style={{ fontSize: 15, alignSelf: 'flex-start' }}>{element.message}</Text>
+              }
+              
+
+
+            }
+            
+          })
         } else {
           return <Text>{'No messages'}</Text>
         }

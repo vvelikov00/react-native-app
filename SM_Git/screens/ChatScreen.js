@@ -9,6 +9,11 @@ export const ChatScreen = ({navigation}) => {
     const [loading, setLoading] = useState(true)
     const [user, setUser] = useState(null)
     const [friend, setFriend] = useState(null)
+    const [width, setWidth] = useState('100%')
+    const [send, setSend] = useState('none')
+    const [search, setSearch] = useState("");
+    const [filteredDataSource, setFilteredDataSource] = useState([]);
+    const [masterDataSource, setMasterDataSource] = useState([]);
     const [messages, setMessages] = useState([]);
     
     useEffect(() => {
@@ -51,7 +56,6 @@ export const ChatScreen = ({navigation}) => {
     async function getUsername() {
       let value = await AsyncStorage.getItem('@Username')
       let parsed = JSON.parse(value)
-     // setUsername(parsed)
       getFriend(parsed)
       getProfile(parsed)
   }
@@ -116,6 +120,58 @@ export const ChatScreen = ({navigation}) => {
       }
 
 
+      const searchFilterFunction = (text) => {
+        // Check if searched text is not blank
+        if (text) {
+          // Inserted text is not blank
+          // Filter the masterDataSource
+          // Update FilteredDataSource
+          const newData = masterDataSource.filter(function (item) {
+            const itemData = item.title
+              ? item.title.toUpperCase()
+              : ''.toUpperCase();
+            const textData = text.toUpperCase();
+            return itemData.indexOf(textData) > -1;
+          });
+          setFilteredDataSource(newData);
+          setSearch(text);
+          console.log(text);
+          setSend('flex')
+          setWidth('90%')
+         // return getUserProfile(text);
+        } else {
+          // Inserted text is blank
+          // Update FilteredDataSource with masterDataSource
+          setFilteredDataSource(masterDataSource);
+          setSearch(text);
+          setSend('none')
+          setWidth('100%')
+         // return getUserProfile(text);
+        }
+      };
+
+      async function insertMessage() {
+        try {
+          setLoading(true)
+          const { data, error } = await supabase
+          .from('messages')
+          .insert({from: user.display_name, to: friend.display_name, message: search, created_at: new Date()})
+          if(!error)
+          
+          if (error) throw error
+            
+        } catch (error) {
+          alert(error.error_description || error.message)
+        } finally {
+          setLoading(false)
+          
+        }
+        
+        setSearch('')
+        setSend('none')
+        setWidth('100%')
+      }
+
 
       function showMessages() {
         if (messages && messages.length !== 0)
@@ -124,10 +180,10 @@ export const ChatScreen = ({navigation}) => {
             //console.log(element)
             if (element) {
               if (element.from === user.display_name) {
-                console.log(element.from)
+                //console.log(element.from)
                 return <Text style={{ fontSize: 15, alignSelf: 'flex-end' }}>{element.message}</Text>
               } else {
-                console.log(element.from)
+                //console.log(element.from)
                 return <Text style={{ fontSize: 15, alignSelf: 'flex-start' }}>{element.message}</Text>
               }
               
@@ -142,7 +198,8 @@ export const ChatScreen = ({navigation}) => {
       }
 
 
-
+   
+  
   
 
 
@@ -163,7 +220,18 @@ export const ChatScreen = ({navigation}) => {
                  <Text>{'\n'}</Text>
             </ScrollView>
              <View style={styles.footer}>
-               <Input placeholder={'Type your message here'}/>
+               <View style={{flexDirection: 'row', width: width}}>
+               <Input placeholder={'Type your message here'} 
+                multiline={true}
+                editable
+                onChangeText={(text) => searchFilterFunction(text)}
+                onClear={(text) => searchFilterFunction('')}
+                value={search}
+                />
+               </View>
+                <TouchableOpacity style={{display: send}} onPress={() => insertMessage()}>
+                <Icon style={styles.add} size={40} name='send'/>
+                </TouchableOpacity>
             </View>
         </View>
         

@@ -63,7 +63,7 @@ export const StartChatScreen = ({navigation}) => {
           }
           
           if (data) {
-            let pp = map.filter( (ele, ind) => ind === map.findIndex( elem => elem.from === ele.from && elem.to === ele.to || elem.from === ele.to))
+            let pp = map.filter( (ele, ind) => ind === map.findIndex( elem => elem.from === ele.from && elem.to === ele.to || elem.from === ele.to && elem.to === ele.from))
             //console.log(pp)
            return await getImages(pp, username);      
           }

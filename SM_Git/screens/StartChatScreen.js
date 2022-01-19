@@ -155,10 +155,10 @@ export const StartChatScreen = ({navigation}) => {
 
       function showMessages() {
 
-        console.log(messages.length)
+       // console.log(messages.length)
         if (messages && messages.length > 0) {
           return messages.map((element) => {
-              console.log(element)
+             // console.log(element)
 
               if (element) {
                   return <TouchableOpacity key={element._W.data.display_name} onPress={() => goToChat(element._W)}>
@@ -175,7 +175,7 @@ export const StartChatScreen = ({navigation}) => {
 
           })  
         } else {
-          console.log('No messages')
+          //console.log('No messages')
           return <Text style={{alignSelf: 'center'}}>{'No messages'}</Text>
         }
 

@@ -187,18 +187,23 @@ export const ProfileScreen = ({navigation}) => {
         setLoading(true)
         const { data, error, status } = await supabase
           .from('post')
-          .select(`post_name`)
+          .select(`post_name, text`)
           .match({username: username})
           .order('created_at', {ascending: false})
-          const map = data.map((element) => {return element.post_name} )
+          const map = data.map((element) => {return element} )
           
         if (error && status !== 406) {
           throw error
         }
         
         if (data) {
-          //console.log(map);
-          return await getImages(map);
+          const final = map.map((element) => {
+            return getImages(element.post_name, element.text);
+          })
+          setTimeout(() => {
+           //console.log(final)
+            setImages(final)
+           }, 300)
         }
       } catch (error) {
         alert(error.message)
@@ -207,26 +212,23 @@ export const ProfileScreen = ({navigation}) => {
       }
     }
 
-    const getImages = async(imgnames) => {
+    const getImages = async(imgname, text) => {
       try {
         setLoading(true)
-        const map = imgnames.map((element) => {
+       
           const { data, error } = supabase.storage
           .from('post-image')
-          .getPublicUrl(element)
+          .getPublicUrl(imgname)
           if (error) {
             throw error
           }
           
           if (data) {
-            return data.publicURL
-            
-            
-            
+           // console.log(data) 
+            return {data, text, imgname}    
           }
-        })
-        setImages(map);
-        //return returnImages(map)
+        
+        //setImages(map);
       }  finally {
         setLoading(false)
       }
@@ -346,11 +348,56 @@ const acceptRequestC = async () => {
     
 }
 
+const like = async (x, post) => {
+  console.log(post)
+  const { data, error } = await supabase
+  .rpc('increment', { x, name: post })
+
+  return data
+}
+
+
 
 
      function returnImages() {
-      return images.map((element) => {
-        return <View style={styles.post} key={element} ><View style={styles.postHeader}><Image source={{uri: image}} style={styles.postProfileImg}/><Text style={styles.postUsername}>{username}</Text></View><Image  source={{uri: element}} style={styles.postImg}/></View>
+      return images.map((element, i) => {
+       // console.log(element)
+        if (i !== images.length-1) {
+          return <View style={styles.post} key={element._W.data.publicURL} >
+          <View style={styles.postHeader}>
+            <Image source={{uri: image}} style={styles.postProfileImg}/>
+            <Text style={styles.postUsername}>{username}</Text>
+            </View>
+            <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
+            <View>
+              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(1, element._W.imgname)}>
+                <Icon size={20} color='#e35542' name='thumb-up'/>
+                <Text style={{alignSelf:'center', color:'#e35542'}} >{' Like'}</Text>
+              </TouchableOpacity>
+            </View>
+            {element._W.text ? <View style={styles.postFooter}>
+              <Text>{username+': '+ element._W.text}</Text>
+            </View>: undefined}
+            </View>
+        } else {
+          return <View style={styles.lastPost} key={element._W.data.publicURL} >
+          <View style={styles.postHeader}>
+            <Image source={{uri: image}} style={styles.postProfileImg}/>
+            <Text style={styles.postUsername}>{username}</Text>
+            </View>
+            <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
+            <View>
+              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(1, element._W.imgname)}>
+                <Icon size={20} color='#e35542' name='thumb-up'/>
+                <Text style={{alignSelf:'center', color:'#e35542'}} >{' Like'}</Text>
+              </TouchableOpacity>
+            </View>
+            {element._W.text ? <View style={styles.postFooter}>
+              <Text>{username+': '+ element._W.text}</Text>
+            </View>: undefined}
+            </View>
+        }
+
       })
      
     } 
@@ -428,7 +475,6 @@ const styles = StyleSheet.create({
     footer: {
         paddingLeft: '1%',
         paddingRight: '1%',
-        position: 'absolute', 
         left: 0, 
         right: 0, 
         bottom: 0,
@@ -452,7 +498,6 @@ const styles = StyleSheet.create({
 
    content: {
      padding: 10,
-     marginBottom: '6%',
    },
 
    profile: {
@@ -483,6 +528,17 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: 'white'
   },
+
+  lastPost: {
+    marginTop: 10,
+    width: '95%',
+    alignSelf: 'center',
+    borderWidth: 0.5,
+    borderRadius: 6,
+    backgroundColor: 'white',
+    marginBottom: '6%'
+  },
+  
 
   postHeader: {
     flexDirection: 'row',

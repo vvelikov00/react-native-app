@@ -8,7 +8,7 @@ export const HomeScreen = ({navigation, session}) => {
     const [loading, setLoading] = useState(true)
     const [username, setUsername] = useState(null)
     const [users, setUsers] = useState([]);
-    const [imagesN, setImagesN] = useState([]);
+    const [images, setImages] = useState([]);
     
     useEffect(() => {
 
@@ -83,7 +83,7 @@ export const HomeScreen = ({navigation, session}) => {
           setLoading(true)
           const { data, error, status } = await supabase
             .from('post')
-            .select(`post_name, username, profile_image`)
+            .select(`post_name, username, profile_image, text`)
             .or('username.eq.'+user+', '+users.map((element) => {return 'username.eq.'+element})+'')
             .order('created_at', {ascending: false})
             const map = data.map((element) => {return element} )
@@ -93,8 +93,13 @@ export const HomeScreen = ({navigation, session}) => {
           }
           
           if (data) {
-           // console.log(map);
-            setImagesN(map);
+            const final = map.map((element) => {
+              return getImages(element.post_name, element.text, element.username, element.profile_image);
+            })
+            setTimeout(() => {
+             // console.log(final)
+              setImages(final)
+             }, 300)
             
           }
         } catch (error) {
@@ -104,12 +109,79 @@ export const HomeScreen = ({navigation, session}) => {
         }
       }
 
+      const getImages = async(imgname, text, username, profile_image) => {
+        try {
+          setLoading(true)
+         
+            const { data, error } = supabase.storage
+            .from('post-image')
+            .getPublicUrl(imgname)
+            if (error) {
+              throw error
+            }
+            
+            if (data) {
+             // console.log(data) 
+              return {data, text, username, profile_image, imgname}    
+            }
+          
+          //setImages(map);
+        }  finally {
+          setLoading(false)
+        }
+      }
 
+      const like = async (x, post) => {
+        console.log(post)
+        const { data, error } = await supabase
+        .rpc('increment', { x, name: post })
+      
+        return data
+      }
+  
 
       function returnImages() {
-        return imagesN.map((element) => {
-          return <View style={styles.post} key={element.post_name} ><View style={styles.postHeader}><Image source={{uri: element.profile_image}} style={styles.postProfileImg}/><Text style={styles.postUsername}>{element.username}</Text></View><Image  source={{uri: 'https://cntbrkgnlgsnfxjdtcky.supabase.in/storage/v1/object/public/post-image/'+element.post_name}} style={styles.postImg}/></View>
+
+        return images.map((element, i) => {
+          //console.log(element)
+          if (i !== images.length-1) {
+            return <View style={styles.post} key={element._W.data.publicURL} >
+            <View style={styles.postHeader}>
+              <Image source={{uri: element._W.profile_image}} style={styles.postProfileImg}/>
+              <Text style={styles.postUsername}>{element._W.username}</Text>
+              </View>
+              <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
+              <View>
+              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(1, element._W.imgname)}>
+                <Icon size={20} color='#e35542' name='thumb-up'/>
+                <Text style={{alignSelf:'center', color:'#e35542'}} >{' Like'}</Text>
+              </TouchableOpacity>
+            </View>
+              {element._W.text ? <View style={styles.postFooter}>
+                <Text>{element._W.username+': '+ element._W.text}</Text>
+              </View>: undefined}
+              </View>
+          } else {
+            return <View style={styles.lastPost} key={element._W.data.publicURL} >
+            <View style={styles.postHeader}>
+              <Image source={{uri: element._W.profile_image}} style={styles.postProfileImg}/>
+              <Text style={styles.postUsername}>{element._W.username}</Text>
+              </View>
+              <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
+              <View>
+              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(1, element._W.imgname)}>
+                <Icon size={20} color='#e35542' name='thumb-up'/>
+                <Text style={{alignSelf:'center', color:'#e35542'}} >{' Like'}</Text>
+              </TouchableOpacity>
+            </View>
+              {element._W.text ? <View style={styles.postFooter}>
+                <Text>{element._W.username+': '+ element._W.text}</Text>
+              </View>: undefined}
+              </View>
+          }
+  
         })
+
        
       } 
   
@@ -173,7 +245,6 @@ const styles = StyleSheet.create({
     footer: {
         paddingLeft: '1%',
         paddingRight: '1%',
-        position: 'absolute', 
         left: 0, 
         right: 0, 
         bottom: 0,
@@ -197,7 +268,6 @@ const styles = StyleSheet.create({
 
    content: {
     padding: 10,
-    marginBottom: '6%',
   },
 
   post: {
@@ -207,6 +277,16 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 6,
     backgroundColor: 'white'
+  },
+
+  lastPost: {
+    marginTop: 10,
+    width: '95%',
+    alignSelf: 'center',
+    borderWidth: 0.5,
+    borderRadius: 6,
+    backgroundColor: 'white',
+    marginBottom: '7%'
   },
 
   postHeader: {
@@ -237,6 +317,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     
   },
+
 
 
     

@@ -5,7 +5,7 @@ import { Icon, Input } from 'react-native-elements'
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../src/supabaseClient';
 import { Button } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+//import { Picker } from '@react-native-picker/picker';
 
 export const AddScreen = ({navigation}) => {
     const [loading, setLoading] = useState(true)
@@ -16,7 +16,10 @@ export const AddScreen = ({navigation}) => {
     const [type, setType] = useState(null)
     const [done, setDone] = useState('Done')
     const [disable, setDisable] = useState(true)
-    const [selectedValue, setSelectedValue] = useState("Photo");
+    const [text, setText] = useState("");
+    const [filteredDataSource, setFilteredDataSource] = useState([]);
+    const [masterDataSource, setMasterDataSource] = useState([]);
+   // const [selectedValue, setSelectedValue] = useState("Photo");
     useEffect(() => {
         getProfile();
     }, []);
@@ -68,18 +71,37 @@ export const AddScreen = ({navigation}) => {
 
             if (error) throw new Error(error.message);
 
-            return {imageData: data}, await updatePost(fileName);;
+            return {imageData: data}, await uploadPost(fileName);;
 
             
         }
 
 
-        const updatePost = async (fname) => {
+        const textFilterFunction = (text) => {
+          if (text) {
+            const newData = masterDataSource.filter(function (item) {
+              const itemData = item.title
+                ? item.title.toUpperCase()
+                : ''.toUpperCase();
+              const textData = text.toUpperCase();
+              return itemData.indexOf(textData) > -1;
+            });
+            setFilteredDataSource(newData);
+            setText(text);
+          } else {
+            setFilteredDataSource(masterDataSource);
+            setText(text);
+          }
+        };
+  
+
+
+        const uploadPost = async (fname) => {
             try {
                 setLoading(true)
                 const { data, error } = await supabase
                 .from('post')
-                .insert({post_name: fname, username: username, created_at: new Date(), profile_image: pImage})
+                .insert({post_name: fname, username: username, created_at: new Date(), profile_image: pImage, text: text})
                 if(!error)
                 
                 navigation.navigate('Home')
@@ -95,20 +117,16 @@ export const AddScreen = ({navigation}) => {
     
 
         const pickImage = async () => {
-          // No permissions request is necessary for launching the image library
           let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
             allowsEditing: true,
             aspect: [1, 1],
             quality: 1,
           });
-      
-          //console.log(result);
-      
+
           if (!result.cancelled) {
             setImage(result.uri);
             setType(result.type);
-            //console.log(type);
             setDisable(false)
           }
         };
@@ -120,21 +138,18 @@ export const AddScreen = ({navigation}) => {
                 <Image style={styles.logo} source={require('../images/SM.png')}/>
             </View>
             <ScrollView style={styles.content}>
-            <Picker
-        selectedValue={selectedValue}
-        style={{ height: 50, width: "100%", alignSelf: 'center' }}
-        onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}
-      >
-        <Picker.Item label="Photo" value="photo"/>
-        <Picker.Item label="Text" value="text" />
-      </Picker>
+
       {image && <Image source={{uri: image}}
                    style={styles.profileImg}/>}
                   
                    <Button onPress={async () =>{ const response = await pickImage();
                
                 } }title={'Upload photo'}/>
-      <Input placeholder={'Type some text here...(not working yet)'}/>
+      <Input placeholder={'Type some text here...'} multiline={true}
+                editable
+                onChangeText={(text) => textFilterFunction(text)}
+                onClear={(text) => textFilterFunction('')}
+                value={text}/>
       <Button disabled={disable} onPress={async () =>{uploadFromURI()} }
       title={done}/>
                 <Text>{'\n'}</Text>
@@ -210,6 +225,7 @@ const styles = StyleSheet.create({
    },
 
    content: {
+       marginTop: '6%',
        paddingLeft: 10,
        paddingRight: 10,
        marginBottom: '6%',

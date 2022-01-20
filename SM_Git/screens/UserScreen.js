@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../src/supabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+
+
 export const UserScreen = ({navigation}) => {
 
     const [loading, setLoading] = useState(true)
@@ -52,18 +54,26 @@ export const UserScreen = ({navigation}) => {
         setLoading(true)
         const { data, error, status } = await supabase
           .from('post')
-          .select(`post_name`)
+          .select(`post_name, text, likes`)
           .match({username: username})
           .order('created_at', {ascending: false})
-          const map = data.map((element) => {return element.post_name} )
+          const map = data.map((element) => {return element} )
           
         if (error && status !== 406) {
           throw error
         }
         
         if (data) {
-          //console.log(map);
-          return await getImages(map);
+          const final = map.map((element) => {
+            return getImages(element.post_name, element.text, element.likes);
+          })
+          setTimeout(() => {
+           // console.log(final)
+            setImages(final)
+           }, 300)
+          
+          
+          
         }
       } catch (error) {
         alert(error.message)
@@ -72,27 +82,23 @@ export const UserScreen = ({navigation}) => {
       }
     }
 
-    const getImages = async(imgnames) => {
+    const getImages = async(imgname, text, likes) => {
       try {
         setLoading(true)
-        const map = imgnames.map((element) => {
+       
           const { data, error } = supabase.storage
           .from('post-image')
-          .getPublicUrl(element)
+          .getPublicUrl(imgname)
           if (error) {
             throw error
           }
           
           if (data) {
-        
-            return data.publicURL
-            
-            
-            
+           // console.log(data) 
+            return {data, text, likes, imgname}    
           }
-        })
-       // console.log(map)
-        setImages(map);
+        
+        //setImages(map);
       }  finally {
         setLoading(false)
       }
@@ -124,6 +130,15 @@ export const UserScreen = ({navigation}) => {
       }
     }
 
+    const like = async (x, post) => {
+      console.log(post)
+      const { data, error } = await supabase
+      .rpc('increment', { x, name: post })
+    
+      return data
+    }
+
+
     async function goToNotifications() {
       AsyncStorage.setItem('@Users', JSON.stringify(requests))
       AsyncStorage.setItem('@User', JSON.stringify(username))
@@ -131,8 +146,40 @@ export const UserScreen = ({navigation}) => {
     }
 
      function returnImages() {
-      return images.map((element) => {
-        return <View style={styles.post} key={element} ><View style={styles.postHeader}><Image source={{uri: image}} style={styles.postProfileImg}/><Text style={styles.postUsername}>{username}</Text></View><Image  source={{uri: element}} style={styles.postImg}/></View>
+       
+      return images.map((element, i) => {
+        //console.log(element)
+        if (i !== images.length-1) {
+          return <View style={styles.post} key={element._W.data.publicURL} >
+          <View style={styles.postHeader}>
+            <Image source={{uri: image}} style={styles.postProfileImg}/>
+            <Text style={styles.postUsername}>{username}</Text>
+            </View>
+
+            <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
+            <View>
+              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(1, element._W.imgname)}>
+                <Icon size={20} color='#e35542' name='thumb-up'/>
+                <Text style={{alignSelf:'center', color:'#e35542'}} >{' Like'}</Text>
+              </TouchableOpacity>
+            </View>
+            {element._W.text ? <View style={styles.postFooter}>
+              <Text>{username+': '+ element._W.text}</Text>
+            </View>: undefined}
+            </View>
+        } else {
+          return <View style={styles.lastPost} key={element._W.data.publicURL} >
+          <View style={styles.postHeader}>
+            <Image source={{uri: image}} style={styles.postProfileImg}/>
+            <Text style={styles.postUsername}>{username}</Text>
+            </View>
+            <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
+            {element._W.text ? <View style={styles.postFooter}>
+              <Text>{username+': '+ element._W.text}</Text>
+            </View>: undefined}
+            </View>
+        }
+
       })
      
     } 
@@ -160,7 +207,7 @@ export const UserScreen = ({navigation}) => {
                 {returnImages()}
                  
                    
-                 <Text>{'\n'}</Text>
+                 <Text>{'\n\n\n\n'}</Text>
             </ScrollView>
              <View style={styles.footer}>
                 <TouchableOpacity onPress={()=>{navigation.navigate('Home')}}>
@@ -205,7 +252,6 @@ const styles = StyleSheet.create({
     footer: {
         paddingLeft: '1%',
         paddingRight: '1%',
-        position: 'absolute', 
         left: 0, 
         right: 0, 
         bottom: 0,
@@ -229,7 +275,6 @@ const styles = StyleSheet.create({
 
    content: {
      padding: 10,
-     marginBottom: '6%',
    },
 
    profile: {
@@ -258,7 +303,18 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderWidth: 0.5,
     borderRadius: 6,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+
+  },
+
+  lastPost: {
+    marginTop: 10,
+    width: '95%',
+    alignSelf: 'center',
+    borderWidth: 0.5,
+    borderRadius: 6,
+    backgroundColor: 'white',
+    marginBottom: '7%'
   },
 
   postHeader: {
@@ -280,7 +336,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginLeft: '5%',
     fontSize: 15
-  }
+  }, 
+
 
 
     

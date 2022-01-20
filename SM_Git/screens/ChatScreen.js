@@ -12,10 +12,9 @@ export const ChatScreen = ({navigation}) => {
     const [friend, setFriend] = useState(null)
     const [width, setWidth] = useState('100%')
     const [send, setSend] = useState('none')
-    const [search, setSearch] = useState("");
+    const [newMessage, setNewMessage] = useState("");
     const [filteredDataSource, setFilteredDataSource] = useState([]);
     const [masterDataSource, setMasterDataSource] = useState([]);
-    const [subscription, setSubscription] = useState(0)
     const [messages, setMessages] = useState([]);
     
     useEffect(() => {
@@ -33,17 +32,14 @@ export const ChatScreen = ({navigation}) => {
        return getNewMessages()
      })
      if (user !== null && friend !== null) {
-      // console.log(friend)
       return async () => await unSub;
      }
      
     }, []);
     const getNewMessages = async () => {
-      //console.log('bdeds')
         const sub = await supabase
         .from('messages')
         .on('*', async payload => {
-          //console.log(payload)
           await getUsername();
         })
         .subscribe();
@@ -51,19 +47,10 @@ export const ChatScreen = ({navigation}) => {
 
       }
 
-
-
-    //console.log(mySubscription)
-    //const {data, fetching, error} = result
-    //if (data) console.log(data.length)
-   // if (fetching) console.log('Loading...')
-   // if (error) console.log(error.message)
-    
     async function getProfile(friend) {
       try {
         setLoading(true)
         const user = supabase.auth.user()
-        //console.log(supabase.auth.session())
         const { data, error, status } = await supabase
           .from('profile')
           .select(`display_name, profile_img_name, fullname`)
@@ -106,8 +93,6 @@ export const ChatScreen = ({navigation}) => {
           
           if (data) {
             setFriend(data)
-            //console.log(data)
-           // return await getImagesN(map, username);
             
           }
         } catch (error) {
@@ -132,14 +117,11 @@ export const ChatScreen = ({navigation}) => {
           }
           
           if (data) {
-           // console.log(friend)
-            //console.log(map[map.length-1])
 
              let final = map.filter(function(element) {
               return element !== undefined
             });
             setMessages(final)
-           // return await getImagesN(map, username);
             
           }
         } catch (error) {
@@ -152,12 +134,8 @@ export const ChatScreen = ({navigation}) => {
       }
 
 
-      const searchFilterFunction = (text) => {
-        // Check if searched text is not blank
+      const messageFilterFunction = (text) => {
         if (text) {
-          // Inserted text is not blank
-          // Filter the masterDataSource
-          // Update FilteredDataSource
           const newData = masterDataSource.filter(function (item) {
             const itemData = item.title
               ? item.title.toUpperCase()
@@ -166,19 +144,14 @@ export const ChatScreen = ({navigation}) => {
             return itemData.indexOf(textData) > -1;
           });
           setFilteredDataSource(newData);
-          setSearch(text);
-         // console.log(text);
+          setNewMessage(text);
           setSend('flex')
           setWidth('90%')
-         // return getUserProfile(text);
         } else {
-          // Inserted text is blank
-          // Update FilteredDataSource with masterDataSource
           setFilteredDataSource(masterDataSource);
-          setSearch(text);
+          setNewMessage(text);
           setSend('none')
           setWidth('100%')
-         // return getUserProfile(text);
         }
       };
 
@@ -187,7 +160,7 @@ export const ChatScreen = ({navigation}) => {
           setLoading(true)
           const { data, error } = await supabase
           .from('messages')
-          .insert({from: user.display_name, to: friend.display_name, message: search, created_at: new Date()})
+          .insert({from: user.display_name, to: friend.display_name, message: newMessage, created_at: new Date()})
           if(!error)
           
           if (error) throw error
@@ -199,7 +172,7 @@ export const ChatScreen = ({navigation}) => {
           
         }
         
-        setSearch('')
+        setNewMessage('')
         setSend('none')
         setWidth('100%')
       }
@@ -267,9 +240,9 @@ export const ChatScreen = ({navigation}) => {
                <Input placeholder={'Type your message here'} 
                 multiline={true}
                 editable
-                onChangeText={(text) => searchFilterFunction(text)}
-                onClear={(text) => searchFilterFunction('')}
-                value={search}
+                onChangeText={(text) => messageFilterFunction(text)}
+                onClear={(text) => messageFilterFunction('')}
+                value={newMessage}
                 />
                </View>
                 <TouchableOpacity style={{display: send}} onPress={() => insertMessage()}>

@@ -9,6 +9,7 @@ export const HomeScreen = ({navigation, session}) => {
     const [username, setUsername] = useState(null)
     const [users, setUsers] = useState([]);
     const [images, setImages] = useState([]);
+    const [likes, setLikes] = useState([]);
     
     useEffect(() => {
 
@@ -67,7 +68,7 @@ export const HomeScreen = ({navigation, session}) => {
           if (data) {
             setUsers(map)
             //console.log(users)
-            return await getImagesN(map, username);
+            return await getLikes(map, username);
             
           }
         } catch (error) {
@@ -78,12 +79,64 @@ export const HomeScreen = ({navigation, session}) => {
       }
 
 
-     async function getImagesN(users, user) {
+      
+    async function getLikes(friends, user) {
+      try {
+        setLoading(true)
+        const { data, error, status } = await supabase
+          .from('likes')
+          .select(`post_name`)
+          .match({from: user})
+          const map = data.map((element) => {return element.post_name})
+        //console.log(data);
+        if (error && status !== 406) {
+          throw error
+        }
+        
+        if (data) {
+          setLikes(map)
+         // console.log(map)
+          return await getImagesN(user, map, friends)
+          
+        }
+      } catch (error) {
+        alert(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    async function getNewLikes() {
+      try {
+        setLoading(true)
+        const { data, error, status } = await supabase
+          .from('likes')
+          .select(`post_name`)
+          .match({from: username})
+          const map = data.map((element) => {return element.post_name})
+        //console.log(data);
+        if (error && status !== 406) {
+          throw error
+        }
+        
+        if (data) {
+          setLikes(map)
+          
+        }
+      } catch (error) {
+        alert(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+
+     async function getImagesN(user, likess, users) {
         try {
           setLoading(true)
           const { data, error, status } = await supabase
             .from('post')
-            .select(`post_name, username, profile_image, text`)
+            .select(`post_name, username, profile_image, text, likes`)
             .or('username.eq.'+user+', '+users.map((element) => {return 'username.eq.'+element})+'')
             .order('created_at', {ascending: false})
             const map = data.map((element) => {return element} )
@@ -94,10 +147,10 @@ export const HomeScreen = ({navigation, session}) => {
           
           if (data) {
             const final = map.map((element) => {
-              return getImages(element.post_name, element.text, element.username, element.profile_image);
+              return getImages(element.post_name, element.text, element.username, element.profile_image, element.likes, likess);
             })
             setTimeout(() => {
-             // console.log(final)
+              console.log(final)
               setImages(final)
              }, 300)
             
@@ -109,7 +162,7 @@ export const HomeScreen = ({navigation, session}) => {
         }
       }
 
-      const getImages = async(imgname, text, username, profile_image) => {
+      const getImages = async(imgname, text, username, profile_image, likes, likess) => {
         try {
           setLoading(true)
          
@@ -121,8 +174,20 @@ export const HomeScreen = ({navigation, session}) => {
             }
             
             if (data) {
-             // console.log(data) 
-              return {data, text, username, profile_image, imgname}    
+             // console.log(data)
+             var color
+             var like
+           //  console.log(imgname, likess.indexOf(imgname))
+             if (likess.indexOf(imgname) < 0) 
+             {
+               color = '#4287f5'
+               like = 'Like'
+             } else {
+               color = '#e35542'
+               like = 'Liked'
+             }   
+             data, text, likes, imgname, color, like
+              return {data, text, username, profile_image, imgname, likes, color, like}    
             }
           
           //setImages(map);
@@ -131,12 +196,64 @@ export const HomeScreen = ({navigation, session}) => {
         }
       }
 
-      const like = async (x, post) => {
-        console.log(post)
-        const { data, error } = await supabase
-        .rpc('increment', { x, name: post })
+      const like = async (post) => {
+        console.log()
+        if (likes.indexOf(post._W.imgname) < 0) {
+          var x = 1
+          try {
+            setLoading(true)
+            const { data, error } = await supabase
+            .from('likes')
+            .insert({post_name: post._W.imgname, from: username, created_at: new Date()})
+            if(!error) {
+              const { data, error } = await supabase
+              .rpc('increment', { x, name: post._W.imgname })
+              post._W.likes = post._W.likes+1
+              post._W.color = '#e35542'
+              post._W.like = 'Liked'
+              return data, post._W.likes, post._W.color, post._W.like, getNewLikes()
+            }
       
-        return data
+      
+            
+            if (error) throw error
+              
+          } catch (error) {
+            alert(error.error_description || error.message)
+          } finally {
+            setLoading(false)
+            
+          }
+      
+        } else {
+          var x = -1
+          try {
+            setLoading(true)
+            const { data, error } = await supabase
+            .from('likes')
+            .delete()
+            .match({post_name: post._W.imgname, from: username})
+            if(!error) {
+              const { data, error } = await supabase
+              .rpc('increment', { x, name: post._W.imgname })
+          
+              post._W.likes = post._W.likes-1
+              post._W.color = '#4287f5'
+              post._W.like = 'Like'
+              return data, post._W.likes, post._W.color, post._W.like, getNewLikes()
+            }
+      
+      
+            
+            if (error) throw error
+              
+          } catch (error) {
+            alert(error.error_description || error.message)
+          } finally {
+            setLoading(false)
+            
+          }
+        }
       }
   
 
@@ -151,11 +268,15 @@ export const HomeScreen = ({navigation, session}) => {
               <Text style={styles.postUsername}>{element._W.username}</Text>
               </View>
               <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
-              <View>
-              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(1, element._W.imgname)}>
-                <Icon size={20} color='#e35542' name='thumb-up'/>
-                <Text style={{alignSelf:'center', color:'#e35542'}} >{' Like'}</Text>
+              <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(element)}>
+                <Icon size={20} color={element._W.color} name='thumb-up'/>
+                <Text style={{alignSelf:'center', color: element._W.color}} >{' '+element._W.like}</Text>
               </TouchableOpacity>
+              <View style={{flexDirection: 'row', marginRight:'1%'}}>
+              <Icon size={20} name='thumb-up'/>
+              <Text style={{alignSelf:'center'}}>{' '+element._W.likes}</Text>
+              </View>
             </View>
               {element._W.text ? <View style={styles.postFooter}>
                 <Text>{element._W.username+': '+ element._W.text}</Text>
@@ -168,11 +289,15 @@ export const HomeScreen = ({navigation, session}) => {
               <Text style={styles.postUsername}>{element._W.username}</Text>
               </View>
               <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
-              <View>
-              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(1, element._W.imgname)}>
-                <Icon size={20} color='#e35542' name='thumb-up'/>
-                <Text style={{alignSelf:'center', color:'#e35542'}} >{' Like'}</Text>
+              <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(element)}>
+                <Icon size={20} color={element._W.color} name='thumb-up'/>
+                <Text style={{alignSelf:'center', color: element._W.color}} >{' '+element._W.like}</Text>
               </TouchableOpacity>
+              <View style={{flexDirection: 'row', marginRight:'1%'}}>
+              <Icon size={20} name='thumb-up'/>
+              <Text style={{alignSelf:'center'}}>{' '+element._W.likes}</Text>
+              </View>
             </View>
               {element._W.text ? <View style={styles.postFooter}>
                 <Text>{element._W.username+': '+ element._W.text}</Text>

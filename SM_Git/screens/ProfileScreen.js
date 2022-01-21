@@ -21,6 +21,7 @@ export const ProfileScreen = ({navigation}) => {
     const [image, setImage] = useState(null);
     const [img, setImg] = useState(null);
     const [images, setImages] = useState([]);
+    const [likes, setLikes] = useState([]);
     useEffect(() => {
       const showProfile = navigation.addListener('focus', () => {
         getUsername();
@@ -35,7 +36,7 @@ export const ProfileScreen = ({navigation}) => {
         let userD = JSON.parse(userJ)
         setUsername(parsed)
         setUser(userD)
-        getProfile(parsed)
+        getProfile(parsed, userD)
         getRequest(parsed, userD)
         getRequestTo(parsed, userD)
         getFriend(parsed, userD)
@@ -151,11 +152,9 @@ export const ProfileScreen = ({navigation}) => {
     }
 
 
-    async function getProfile(username) {
+    async function getProfile(username, user) {
       try {
-        setLoading(true)
-        const user = supabase.auth.user()
-        
+        setLoading(true)     
         const { data, error, status } = await supabase
           .from('profile')
           .select(`fullname, profile_img_name`)
@@ -169,7 +168,58 @@ export const ProfileScreen = ({navigation}) => {
         if (data) {
           setName(data.fullname)
           setImage(data.profile_img_name)
-          return await getImagesN(username);
+          return await getLikes(username, user);
+          
+        }
+      } catch (error) {
+        alert(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+
+    async function getLikes(username, user) {
+      try {
+        setLoading(true)
+        const { data, error, status } = await supabase
+          .from('likes')
+          .select(`post_name`)
+          .match({from: user})
+          const map = data.map((element) => {return element.post_name})
+        //console.log(data);
+        if (error && status !== 406) {
+          throw error
+        }
+        
+        if (data) {
+          setLikes(map)
+          console.log(map)
+          return await getImagesN(username,  map)
+          
+        }
+      } catch (error) {
+        alert(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    async function getNewLikes() {
+      try {
+        setLoading(true)
+        const { data, error, status } = await supabase
+          .from('likes')
+          .select(`post_name`)
+          .match({from: user})
+          const map = data.map((element) => {return element.post_name})
+        //console.log(data);
+        if (error && status !== 406) {
+          throw error
+        }
+        
+        if (data) {
+          setLikes(map)
           
         }
       } catch (error) {
@@ -182,12 +232,12 @@ export const ProfileScreen = ({navigation}) => {
 
     
 
-    async function getImagesN(username) {
+    async function getImagesN(username,  likess) {
       try {
         setLoading(true)
         const { data, error, status } = await supabase
           .from('post')
-          .select(`post_name, text`)
+          .select(`post_name, text, likes`)
           .match({username: username})
           .order('created_at', {ascending: false})
           const map = data.map((element) => {return element} )
@@ -198,10 +248,12 @@ export const ProfileScreen = ({navigation}) => {
         
         if (data) {
           const final = map.map((element) => {
-            return getImages(element.post_name, element.text);
+            //console.log(likess)
+           // console.log(element.post_name, element.text, element.likes, likess)
+            return getImages(element.post_name, element.text, element.likes, likess);
           })
           setTimeout(() => {
-           //console.log(final)
+           console.log(final)
             setImages(final)
            }, 300)
         }
@@ -212,7 +264,7 @@ export const ProfileScreen = ({navigation}) => {
       }
     }
 
-    const getImages = async(imgname, text) => {
+    const getImages = async(imgname, text, likes, likess) => {
       try {
         setLoading(true)
        
@@ -224,8 +276,19 @@ export const ProfileScreen = ({navigation}) => {
           }
           
           if (data) {
-           // console.log(data) 
-            return {data, text, imgname}    
+           // console.log(data)
+           var color
+           var like
+           console.log(imgname, likess.indexOf(imgname))
+           if (likess.indexOf(imgname) < 0) 
+           {
+             color = '#4287f5'
+             like = 'Like'
+           } else {
+             color = '#e35542'
+             like = 'Liked'
+           }  
+            return {data, text, likes, imgname, color, like}    
           }
         
         //setImages(map);
@@ -348,14 +411,71 @@ const acceptRequestC = async () => {
     
 }
 
-const like = async (x, post) => {
-  console.log(post)
-  const { data, error } = await supabase
+const like = async (post) => {
+  console.log()
+  if (likes.indexOf(post._W.imgname) < 0) {
+    var x = 1
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+      .from('likes')
+      .insert({post_name: post._W.imgname, from: user, created_at: new Date()})
+      if(!error) {
+        const { data, error } = await supabase
+        .rpc('increment', { x, name: post._W.imgname })
+        post._W.likes = post._W.likes+1
+        post._W.color = '#e35542'
+        post._W.like = 'Liked'
+        return data, post._W.likes, post._W.color, post._W.like, getNewLikes()
+      }
+
+
+      
+      if (error) throw error
+        
+    } catch (error) {
+      alert(error.error_description || error.message)
+    } finally {
+      setLoading(false)
+      
+    }
+
+  } else {
+    var x = -1
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+      .from('likes')
+      .delete()
+      .match({post_name: post._W.imgname, from: user})
+      if(!error) {
+        const { data, error } = await supabase
+        .rpc('increment', { x, name: post._W.imgname })
+    
+        post._W.likes = post._W.likes-1
+        post._W.color = '#4287f5'
+        post._W.like = 'Like'
+        return data, post._W.likes, post._W.color, post._W.like, getNewLikes()
+      }
+
+
+      
+      if (error) throw error
+        
+    } catch (error) {
+      alert(error.error_description || error.message)
+    } finally {
+      setLoading(false)
+      
+    }
+  }
+
+
+ /* const { data, error } = await supabase
   .rpc('increment', { x, name: post })
 
-  return data
+  return data*/
 }
-
 
 
 
@@ -369,11 +489,15 @@ const like = async (x, post) => {
             <Text style={styles.postUsername}>{username}</Text>
             </View>
             <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
-            <View>
-              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(1, element._W.imgname)}>
-                <Icon size={20} color='#e35542' name='thumb-up'/>
-                <Text style={{alignSelf:'center', color:'#e35542'}} >{' Like'}</Text>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(element)}>
+                <Icon size={20} color={element._W.color} name='thumb-up'/>
+                <Text style={{alignSelf:'center', color:element._W.color}} >{' '+element._W.like}</Text>
               </TouchableOpacity>
+              <View style={{flexDirection: 'row', marginRight:'1%'}}>
+              <Icon size={20} name='thumb-up'/>
+              <Text style={{alignSelf:'center'}}>{' '+element._W.likes}</Text>
+              </View>
             </View>
             {element._W.text ? <View style={styles.postFooter}>
               <Text>{username+': '+ element._W.text}</Text>
@@ -386,11 +510,15 @@ const like = async (x, post) => {
             <Text style={styles.postUsername}>{username}</Text>
             </View>
             <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
-            <View>
-              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(1, element._W.imgname)}>
-                <Icon size={20} color='#e35542' name='thumb-up'/>
-                <Text style={{alignSelf:'center', color:'#e35542'}} >{' Like'}</Text>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(element)}>
+                <Icon size={20} color={element._W.color} name='thumb-up'/>
+                <Text style={{alignSelf:'center', color:element._W.color}} >{' '+element._W.like}</Text>
               </TouchableOpacity>
+              <View style={{flexDirection: 'row', marginRight:'1%'}}>
+              <Icon size={20} name='thumb-up'/>
+              <Text style={{alignSelf:'center'}}>{' '+element._W.likes}</Text>
+              </View>
             </View>
             {element._W.text ? <View style={styles.postFooter}>
               <Text>{username+': '+ element._W.text}</Text>

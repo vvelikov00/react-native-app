@@ -4,7 +4,7 @@ import { Icon } from 'react-native-elements'
 import { useState, useEffect } from 'react'
 import { supabase } from '../src/supabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import styles from '../styles/allScreens'
+import styles from '../styles/mainScreens'
 
 
 export const UserScreen = ({navigation}) => {
@@ -18,9 +18,10 @@ export const UserScreen = ({navigation}) => {
     const [likes, setLikes] = useState([]);
 
     useEffect(() => {
-      getProfile()
-      
-    }, [])
+      const showProfile = navigation.addListener('focus', () => {
+        getProfile();
+      });
+    }, [navigation])
   
     async function getProfile() {
       try {

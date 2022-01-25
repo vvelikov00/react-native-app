@@ -5,7 +5,7 @@ import { Icon } from 'react-native-elements'
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../src/supabaseClient';
 import { Button } from 'react-native';
-import styles from '../styles/allScreens'
+import styles from '../styles/mainScreens'
 
 export const SettingsScreen = ({navigation}) => {
     const [loading, setLoading] = useState(true)
@@ -142,9 +142,9 @@ export const SettingsScreen = ({navigation}) => {
                     setImageData(response?.imageData);
                 }
                 } }title={'Change photo'}/>
-                <Button title='Change email'/>
-                <Button title='Change username'/>
-                <Button title='Change password'/>
+                <Button title='Change email' onPress={() => {navigation.navigate('ChangeEmail')}}/>
+                <Button title='Change username (not working fully yet)'onPress={() => {navigation.navigate('ChangeUsername')}}/>
+                <Button title='Change password' onPress={() => {navigation.navigate('ChangePassword')}}/>
                 <Button title='Logout' onPress={async () =>{setTimeout(() => {const { error } = supabase.auth.signOut(); navigation.navigate('Login')}, 100)}}/>
             </View>
              <View style={styles.footer}>

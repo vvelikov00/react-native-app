@@ -5,7 +5,7 @@ import { Button, Input } from 'react-native-elements'
 import { TouchableHighlight } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { supabase } from '../src/supabaseClient'
-import styles from '../styles/login-register-screens'
+import styles from '../styles/settingsScreens'
 
 const LoginScreen = ({navigation, session}) => {
     const [password, setPassword] = useState('');

@@ -17,6 +17,9 @@ import { ProfileScreen } from './screens/ProfileScreen';
 import { NotificationScreen } from './screens/NotificationScreen';
 import { StartChatScreen } from './screens/StartChatScreen';
 import { StartNewChatScreen } from './screens/StartNewChatScreen';
+import ChangeEmailScreen from './screens/ChangeEmailScreen';
+import ChangePasswordScreen from './screens/ChangePasswordScreen';
+import ChangeUsernameScreen from './screens/ChangeUsernameScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +47,9 @@ export default function App() {
          <Stack.Screen name="Search" component={SearchScreen}/>
          <Stack.Screen name="OtherUser" component={ProfileScreen}/>
          <Stack.Screen name="Notification" component={NotificationScreen}/>
+         <Stack.Screen name="ChangeEmail" component={ChangeEmailScreen}/>
+         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen}/> 
+         <Stack.Screen name="ChangeUsername" component={ChangeUsernameScreen}/>             
        </Stack.Navigator>
        
     </NavigationContainer>

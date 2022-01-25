@@ -6,7 +6,7 @@ import { TouchableHighlight } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { supabase } from '../src/supabaseClient'
 import { LogBox } from 'react-native';
-import styles from '../styles/login-register-screens'
+import styles from '../styles/settingsScreens'
 
 LogBox.ignoreLogs(['Setting a timer']);
 

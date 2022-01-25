@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon } from 'react-native-elements'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import styles from '../styles/allScreens'
+import styles from '../styles/mainScreens'
 
 
 

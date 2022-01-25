@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react'
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
-import styles from '../styles/allScreens'
+import styles from '../styles/mainScreens'
 
 export const HomeScreen = ({navigation, session}) => {
 
@@ -46,7 +46,7 @@ export const HomeScreen = ({navigation, session}) => {
           
         }
       } catch (error) {
-        alert(error.message)
+       alert(error.message)
       } finally {
         setLoading(false)
       }
@@ -125,7 +125,7 @@ export const HomeScreen = ({navigation, session}) => {
           
         }
       } catch (error) {
-        alert(error.message)
+       alert(error.message)
       } finally {
         setLoading(false)
       }
@@ -133,6 +133,7 @@ export const HomeScreen = ({navigation, session}) => {
 
 
      async function getImagesN(user, likess, users) {
+       if (users.length > 0) {
         try {
           setLoading(true)
           const { data, error, status } = await supabase
@@ -151,7 +152,6 @@ export const HomeScreen = ({navigation, session}) => {
               return getImages(element.post_name, element.text, element.username, element.profile_image, element.likes, likess);
             })
             setTimeout(() => {
-              console.log(final)
               setImages(final)
              }, 300)
             
@@ -161,6 +161,36 @@ export const HomeScreen = ({navigation, session}) => {
         } finally {
           setLoading(false)
         }
+       } else {
+        try {
+          setLoading(true)
+          const { data, error, status } = await supabase
+            .from('post')
+            .select(`post_name, username, profile_image, text, likes`)
+            .match({username: user})
+            .order('created_at', {ascending: false})
+            const map = data.map((element) => {return element} )
+            
+          if (error && status !== 406) {
+            throw error
+          }
+          
+          if (data) {
+            const final = map.map((element) => {
+              return getImages(element.post_name, element.text, element.username, element.profile_image, element.likes, likess);
+            })
+            setTimeout(() => {
+              setImages(final)
+             }, 300)
+            
+          }
+        } catch (error) {
+          alert(error.message)
+        } finally {
+          setLoading(false)
+        }
+       }
+
       }
 
       const getImages = async(imgname, text, username, profile_image, likes, likess) => {
@@ -198,7 +228,6 @@ export const HomeScreen = ({navigation, session}) => {
       }
 
       const like = async (post) => {
-        console.log()
         if (likes.indexOf(post._W.imgname) < 0) {
           var x = 1
           try {
@@ -249,7 +278,7 @@ export const HomeScreen = ({navigation, session}) => {
             if (error) throw error
               
           } catch (error) {
-            alert(error.error_description || error.message)
+           // alert(error.error_description || error.message)
           } finally {
             setLoading(false)
             
@@ -259,54 +288,56 @@ export const HomeScreen = ({navigation, session}) => {
   
 
       function returnImages() {
+        if (images.length > 0) {
+          return images.map((element, i) => {
+            //console.log(element)
+            if (i !== images.length-1) {
+              return <View style={styles.post} key={element._W.data.publicURL} >
+              <View style={styles.postHeader}>
+                <Image source={{uri: element._W.profile_image}} style={styles.postProfileImg}/>
+                <Text style={styles.postUsername}>{element._W.username}</Text>
+                </View>
+                <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(element)}>
+                  <Icon size={20} color={element._W.color} name='thumb-up'/>
+                  <Text style={{alignSelf:'center', color: element._W.color}} >{' '+element._W.like}</Text>
+                </TouchableOpacity>
+                <View style={{flexDirection: 'row', marginRight:'1%'}}>
+                <Icon size={20} name='thumb-up'/>
+                <Text style={{alignSelf:'center'}}>{' '+element._W.likes}</Text>
+                </View>
+              </View>
+                {element._W.text ? <View style={styles.postFooter}>
+                  <Text>{element._W.username+': '+ element._W.text}</Text>
+                </View>: undefined}
+                </View>
+            } else {
+              return <View style={styles.lastPost} key={element._W.data.publicURL} >
+              <View style={styles.postHeader}>
+                <Image source={{uri: element._W.profile_image}} style={styles.postProfileImg}/>
+                <Text style={styles.postUsername}>{element._W.username}</Text>
+                </View>
+                <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(element)}>
+                  <Icon size={20} color={element._W.color} name='thumb-up'/>
+                  <Text style={{alignSelf:'center', color: element._W.color}} >{' '+element._W.like}</Text>
+                </TouchableOpacity>
+                <View style={{flexDirection: 'row', marginRight:'1%'}}>
+                <Icon size={20} name='thumb-up'/>
+                <Text style={{alignSelf:'center'}}>{' '+element._W.likes}</Text>
+                </View>
+              </View>
+                {element._W.text ? <View style={styles.postFooter}>
+                  <Text>{element._W.username+': '+ element._W.text}</Text>
+                </View>: undefined}
+                </View>
+            }
+    
+          })
+        }
 
-        return images.map((element, i) => {
-          //console.log(element)
-          if (i !== images.length-1) {
-            return <View style={styles.post} key={element._W.data.publicURL} >
-            <View style={styles.postHeader}>
-              <Image source={{uri: element._W.profile_image}} style={styles.postProfileImg}/>
-              <Text style={styles.postUsername}>{element._W.username}</Text>
-              </View>
-              <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
-              <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(element)}>
-                <Icon size={20} color={element._W.color} name='thumb-up'/>
-                <Text style={{alignSelf:'center', color: element._W.color}} >{' '+element._W.like}</Text>
-              </TouchableOpacity>
-              <View style={{flexDirection: 'row', marginRight:'1%'}}>
-              <Icon size={20} name='thumb-up'/>
-              <Text style={{alignSelf:'center'}}>{' '+element._W.likes}</Text>
-              </View>
-            </View>
-              {element._W.text ? <View style={styles.postFooter}>
-                <Text>{element._W.username+': '+ element._W.text}</Text>
-              </View>: undefined}
-              </View>
-          } else {
-            return <View style={styles.lastPost} key={element._W.data.publicURL} >
-            <View style={styles.postHeader}>
-              <Image source={{uri: element._W.profile_image}} style={styles.postProfileImg}/>
-              <Text style={styles.postUsername}>{element._W.username}</Text>
-              </View>
-              <Image  source={{uri: element._W.data.publicURL}} style={styles.postImg}/>
-              <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-              <TouchableOpacity style={{flexDirection: 'row', marginLeft: '1%'}} onPress={() => like(element)}>
-                <Icon size={20} color={element._W.color} name='thumb-up'/>
-                <Text style={{alignSelf:'center', color: element._W.color}} >{' '+element._W.like}</Text>
-              </TouchableOpacity>
-              <View style={{flexDirection: 'row', marginRight:'1%'}}>
-              <Icon size={20} name='thumb-up'/>
-              <Text style={{alignSelf:'center'}}>{' '+element._W.likes}</Text>
-              </View>
-            </View>
-              {element._W.text ? <View style={styles.postFooter}>
-                <Text>{element._W.username+': '+ element._W.text}</Text>
-              </View>: undefined}
-              </View>
-          }
-  
-        })
 
        
       } 

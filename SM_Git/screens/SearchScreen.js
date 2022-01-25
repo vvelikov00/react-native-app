@@ -4,7 +4,7 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon, SearchBar } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient';
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import styles from '../styles/allScreens'
+import styles from '../styles/mainScreens'
 
 
 export const SearchScreen = ({navigation}) => {

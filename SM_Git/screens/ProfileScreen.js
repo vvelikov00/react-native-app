@@ -4,7 +4,7 @@ import { Icon } from 'react-native-elements'
 import { useState, useEffect } from 'react'
 import { supabase } from '../src/supabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import styles from '../styles/allScreens'
+import styles from '../styles/mainScreens'
 
 export const ProfileScreen = ({navigation}) => {
 

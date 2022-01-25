@@ -5,7 +5,7 @@ import { Icon, Input } from 'react-native-elements'
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../src/supabaseClient';
 import { Button } from 'react-native';
-import styles from '../styles/allScreens'
+import styles from '../styles/mainScreens'
 
 export const AddScreen = ({navigation}) => {
     const [loading, setLoading] = useState(true)

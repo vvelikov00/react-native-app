@@ -1,11 +1,11 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, Platform, StatusBar } from 'react-native'
+import { View, Text} from 'react-native'
 import { Button, Input } from 'react-native-elements'
 import { TouchableHighlight } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { supabase } from '../src/supabaseClient'
-
+import styles from '../styles/login-register-screens'
 
 const LoginScreen = ({navigation, session}) => {
     const [password, setPassword] = useState('');
@@ -64,10 +64,10 @@ const LoginScreen = ({navigation, session}) => {
               handleLogin(email, password, navigation.navigate)
             }}/>
             </TouchableHighlight>
-            <TouchableOpacity style={styles.regBtn} onPress={() => navigation.navigate('Register')}>
-                <Text style={styles.regBtnT}>Register</Text>
+            <TouchableOpacity style={styles.Btn} onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.BtnT}>Register</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.regBtn}>
+            <TouchableOpacity style={styles.Btn}>
                 <Text style={styles.fPass}>Forgotten password? </Text>
             </TouchableOpacity>
 
@@ -78,39 +78,3 @@ const LoginScreen = ({navigation, session}) => {
 
 export default LoginScreen
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-        padding: 10,
-        backgroundColor: '#fff',
-    },
-
-    button:{
-        width: '90%',
-        marginTop: 10,
-    },
-
-    regBtn:{
-        width: '90%',
-        marginTop: 10,
-        alignItems: 'center',
-        borderColor: 'dodgerblue',
-        borderStyle: 'solid',
-    },
-
-    regBtnT:{
-        marginTop: 10,
-        color: 'dodgerblue',
-        fontSize: 20,
-    },
-
-    fPass: {
-        marginTop: 10,
-        color: 'black',
-
-    }
-    
-});

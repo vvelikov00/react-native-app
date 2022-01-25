@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react'
 import { useState } from 'react';
-import { View, StyleSheet, Platform, StatusBar, Image, TouchableOpacity } from 'react-native'
+import { View, Image, TouchableOpacity } from 'react-native'
 import { Icon } from 'react-native-elements'
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../src/supabaseClient';
 import { Button } from 'react-native';
-
+import styles from '../styles/allScreens'
 
 export const SettingsScreen = ({navigation}) => {
     const [loading, setLoading] = useState(true)
@@ -145,7 +145,6 @@ export const SettingsScreen = ({navigation}) => {
                 <Button title='Change email'/>
                 <Button title='Change username'/>
                 <Button title='Change password'/>
-
                 <Button title='Logout' onPress={async () =>{setTimeout(() => {const { error } = supabase.auth.signOut(); navigation.navigate('Login')}, 100)}}/>
             </View>
              <View style={styles.footer}>
@@ -164,61 +163,7 @@ export const SettingsScreen = ({navigation}) => {
                  <TouchableOpacity onPress={()=>{navigation.navigate('Profile')}}>
                      <Icon style={styles.add} size={40} name='person'/>
                  </TouchableOpacity>
-
-                
-
             </View>
-        </View>
-        
+        </View>     
     )
 }
-
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        height: "100%",
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    },
-
-    header: {
-        width: "100%",
-        height: "6%",
-        alignItems: 'center',
-        borderBottomColor: 'black',
-        borderBottomWidth: 1,
-        backgroundColor: '#fff',
-    },
-
-    footer: {
-        paddingLeft: '1%',
-        paddingRight: '1%',
-        position: 'absolute', 
-        left: 0, 
-        right: 0, 
-        bottom: 0,
-        width: "100%",
-        height: "6%",
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        flexDirection: "row",
-        justifyContent: 'space-between',
-    },
-
-   logo:{
-       width: "100%",
-       height: "100%",
-   },
-
-   add: {
-       alignSelf:'center',
-       
-   },
-
-   content: {
-       justifyContent: 'center',
-       padding: 10,
-   }
-
-    
-});

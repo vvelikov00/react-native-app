@@ -1,9 +1,9 @@
 import React, {useEffect, useState, useRef} from 'react'
-import { View, Text, StyleSheet, Platform, StatusBar, Image, TouchableOpacity, ScrollView } from 'react-native'
+import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon, Input } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-
+import styles from '../styles/allScreens'
  
 export const ChatScreen = ({navigation}) => {
 
@@ -228,12 +228,7 @@ export const ChatScreen = ({navigation}) => {
             <ScrollView style={styles.content} ref={scrollViewRef}
       onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })}>
               {showMessages()}  
-
-              
-                
-                 
-                   
-                 <Text>{'\n\n\n'}</Text>
+              <Text>{'\n'}</Text>
             </ScrollView>
              <View style={styles.footer}>
                <View style={{flexDirection: 'row', width: width}}>
@@ -253,52 +248,3 @@ export const ChatScreen = ({navigation}) => {
         
     )
 }
-
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        height: "100%",
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    },
-
-    header: {
-        width: "100%",
-        height: "6%",
-        borderBottomColor: 'black',
-        borderBottomWidth: 1,
-        backgroundColor: '#fff',
-    },
-
-    footer: {
-        paddingLeft: '1%',
-        paddingRight: '1%',
-        position: 'absolute', 
-        left: 0, 
-        right: 0, 
-        bottom: 0,
-        width: "100%",
-        height: "9%",
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        flexDirection: "row",
-        justifyContent: 'space-between',
-    },
-
-   logo:{
-       width: "100%",
-       height: "100%",
-   },
-
-
-
-   content: {
-    padding: 10,
-    marginBottom: '6%',
-  },
-
-
-
-
-    
-});

@@ -17,7 +17,6 @@ import { ProfileScreen } from './screens/ProfileScreen';
 import { NotificationScreen } from './screens/NotificationScreen';
 import { StartChatScreen } from './screens/StartChatScreen';
 import { StartNewChatScreen } from './screens/StartNewChatScreen';
-import { Provider } from 'react-supabase';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,7 +30,6 @@ export default function App() {
     })
   }, [])
   return (
-    <Provider value={supabase}>
           <NavigationContainer>
        <Stack.Navigator screenOptions={{headerShown: false}}>
           <Stack.Screen name="Login" component={LoginScreen} session={session}/>
@@ -49,7 +47,6 @@ export default function App() {
        </Stack.Navigator>
        
     </NavigationContainer>
-</Provider>
     
   );
 }

@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react'
-import { View, Text, StyleSheet, Platform, StatusBar, Image, TouchableOpacity, ScrollView } from 'react-native'
+import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
+import styles from '../styles/allScreens'
 
 export const HomeScreen = ({navigation, session}) => {
 
@@ -318,13 +319,7 @@ export const HomeScreen = ({navigation, session}) => {
                 <Image style={styles.logo} source={require('../images/SM.png')}/>
             </View>
             <ScrollView style={styles.content}>
-          
-
-              
                 {returnImages()}
-                 
-                   
-                 <Text>{'\n'}</Text>
             </ScrollView>
              <View style={styles.footer}>
                 <TouchableOpacity disabled>
@@ -351,99 +346,3 @@ export const HomeScreen = ({navigation, session}) => {
 }
 
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        height: "100%",
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    },
-
-    header: {
-        width: "100%",
-        height: "6%",
-        alignItems: 'center',
-        borderBottomColor: 'black',
-        borderBottomWidth: 1,
-        backgroundColor: '#fff',
-    },
-
-    footer: {
-        paddingLeft: '1%',
-        paddingRight: '1%',
-        left: 0, 
-        right: 0, 
-        bottom: 0,
-        width: "100%",
-        height: "6%",
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        flexDirection: "row",
-        justifyContent: 'space-between',
-    },
-
-   logo:{
-       width: "100%",
-       height: "100%",
-   },
-
-   add: {
-       alignSelf:'center',
-       
-   },
-
-   content: {
-    padding: 10,
-  },
-
-  post: {
-    marginTop: 10,
-    width: '95%',
-    alignSelf: 'center',
-    borderWidth: 0.5,
-    borderRadius: 6,
-    backgroundColor: 'white'
-  },
-
-  lastPost: {
-    marginTop: 10,
-    width: '95%',
-    alignSelf: 'center',
-    borderWidth: 0.5,
-    borderRadius: 6,
-    backgroundColor: 'white',
-    marginBottom: '7%'
-  },
-
-  postHeader: {
-    flexDirection: 'row',
-    
-  },
-
-  postProfileImg: {
-    width:'10%',
-    height: undefined,
-    aspectRatio: 1,
-    marginBottom: '1%',
-    marginTop: '1%',
-    borderRadius: 10,
-    marginLeft: '3%', 
-  },
-
-  postUsername: {
-    alignSelf: 'center',
-    marginLeft: '5%',
-    fontSize: 15
-  },
-
-  postImg: {
-    width: '100%',
-    height: undefined,
-    aspectRatio: 1,
-    borderRadius: 5,
-    
-  },
-
-
-
-    
-});

@@ -1,11 +1,12 @@
 import React from 'react'
 import { useState } from 'react'
-import { View, Text, StyleSheet, Platform, StatusBar } from 'react-native'
+import { View, Text} from 'react-native'
 import { Button, Input } from 'react-native-elements'
 import { TouchableHighlight } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { supabase } from '../src/supabaseClient'
 import { LogBox } from 'react-native';
+import styles from '../styles/login-register-screens'
 
 LogBox.ignoreLogs(['Setting a timer']);
 
@@ -80,8 +81,8 @@ const RegisterScreen = ({navigation}) => {
             }}/>
             </TouchableHighlight>
 
-            <TouchableOpacity style={styles.sigBtn} onPress={()=> navigation.navigate('Login')}>
-                <Text style={styles.sigBtnT}>Sign in</Text>
+            <TouchableOpacity style={styles.Btn} onPress={()=> navigation.navigate('Login')}>
+                <Text style={styles.BtnT}>Sign in</Text>
             </TouchableOpacity>
 
 
@@ -91,41 +92,3 @@ const RegisterScreen = ({navigation}) => {
 }
 
 export default RegisterScreen
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-        padding: 10,
-        backgroundColor: '#fff',
-    },
-
-    button:{
-        width: '90%',
-        marginTop: 10,
-        
-    },
-
-    sigBtn:{
-        width: '90%',
-        marginTop: 10,
-        alignItems: 'center',
-        borderColor: 'dodgerblue',
-        borderStyle: 'solid',
-    },
-
-    sigBtnT:{
-        marginTop: 10,
-        color: 'dodgerblue',
-        fontSize: 20,
-    },
-
-    fPass: {
-        marginTop: 10,
-        color: 'black',
-
-    }
-    
-});

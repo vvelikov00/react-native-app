@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react'
-import { View, Text, StyleSheet, Platform, StatusBar, Image, TouchableOpacity, ScrollView } from 'react-native'
+import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import styles from '../styles/allScreens'
 
 export const StartChatScreen = ({navigation}) => {
 
@@ -197,11 +198,6 @@ export const StartChatScreen = ({navigation}) => {
                     <Text>Start new chat</Text><Icon name='add'/>
                 </TouchableOpacity>
                 {showMessages()}
-
-                
-                 
-                   
-                 <Text>{'\n'}</Text>
             </ScrollView>
              <View style={styles.footer}>
                 <TouchableOpacity onPress={() => {navigation.navigate('Home')}}>
@@ -219,90 +215,7 @@ export const StartChatScreen = ({navigation}) => {
                  <TouchableOpacity onPress={()=>{navigation.navigate('Profile')}}>
                      <Icon style={styles.add} size={40} name='person'/>
                  </TouchableOpacity>
-
-
             </View>
-        </View>
-        
+        </View> 
     )
 }
-
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        height: "100%",
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-    },
-
-    header: {
-        width: "100%",
-        height: "6%",
-        alignItems: 'center',
-        borderBottomColor: 'black',
-        borderBottomWidth: 1,
-        backgroundColor: '#fff',
-    },
-
-    footer: {
-        paddingLeft: '1%',
-        paddingRight: '1%',
-        position: 'absolute', 
-        left: 0, 
-        right: 0, 
-        bottom: 0,
-        width: "100%",
-        height: "6%",
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        flexDirection: "row",
-        justifyContent: 'space-between',
-    },
-
-   logo:{
-       width: "100%",
-       height: "100%",
-   },
-
-   add: {
-       alignSelf:'center',
-       
-   },
-
-   content: {
-    padding: 10,
-    marginBottom: '6%',
-  },
-
-  result: {
-    marginTop: '2%',
-    width: '100%',
-    alignItems: 'center',
-    flexDirection: 'row',
-    borderRadius: 6,
-    borderWidth: 0.5,
-    backgroundColor: 'white'
- },
-
- resultImg: {
-     width: '15%',
-     height: undefined,
-     aspectRatio: 1,
-     borderRadius: 6,
-     
- },
-
- text: {
-     marginLeft: '10%'
- },
- 
-
- fullname: {
-     fontSize: 25
- }
-
-
-
-
-    
-});

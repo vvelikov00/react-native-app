@@ -4,6 +4,7 @@ import { Icon } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import styles from '../styles/mainScreens'
+import { Header } from '../components/Header'
 
 export const StartNewChatScreen = ({navigation}) => {
 
@@ -152,9 +153,7 @@ export const StartNewChatScreen = ({navigation}) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Image style={styles.logo} source={require('../images/SM.png')}/>
-            </View>
+            <Header/>
             <ScrollView style={styles.content}>
             {showUsers()}
             </ScrollView>

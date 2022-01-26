@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon } from 'react-native-elements'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import styles from '../styles/mainScreens'
-
+import { Header } from '../components/Header'
 
 
 export const NotificationScreen = ({navigation}) => {
@@ -47,9 +47,7 @@ export const NotificationScreen = ({navigation}) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Image style={styles.logo} source={require('../images/SM.png')}/>
-            </View>
+            <Header/>
             <ScrollView style={styles.content}>      
                {mapRequests()}
         </ScrollView>

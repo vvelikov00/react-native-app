@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native'
 import { Icon } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
 import styles from '../styles/mainScreens'
+import { Header } from '../components/Header'
 
 export const HomeScreen = ({navigation, session}) => {
 
@@ -346,9 +347,10 @@ export const HomeScreen = ({navigation, session}) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
+          {/*  <View style={styles.header}>
                 <Image style={styles.logo} source={require('../images/SM.png')}/>
-            </View>
+            </View>*/}
+            <Header/>
             <ScrollView style={styles.content}>
                 {returnImages()}
             </ScrollView>

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../src/supabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import styles from '../styles/mainScreens'
+import { Header } from '../components/Header'
 
 export const ProfileScreen = ({navigation}) => {
 
@@ -533,9 +534,7 @@ const like = async (post) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Image style={styles.logo} source={require('../images/SM.png')}/>
-            </View>
+            <Header/>
             <ScrollView style={styles.content}>
           
               <View style={styles.profile}>

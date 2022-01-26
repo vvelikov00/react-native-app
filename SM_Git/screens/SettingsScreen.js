@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../src/supabaseClient';
 import { Button } from 'react-native';
 import styles from '../styles/mainScreens'
+import { Header } from '../components/Header'
 
 export const SettingsScreen = ({navigation}) => {
     const [loading, setLoading] = useState(true)
@@ -131,10 +132,7 @@ export const SettingsScreen = ({navigation}) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                
-                <Image style={styles.logo} source={require('../images/SM.png')}/>
-            </View>
+            <Header/>
             <View style={styles.content}>
                 <Button onPress={async () =>{ const response = await pickImage();
                 if(response?.imageData) {

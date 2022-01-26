@@ -4,6 +4,7 @@ import { Icon } from 'react-native-elements'
 import { supabase } from '../src/supabaseClient'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import styles from '../styles/mainScreens'
+import { Header } from '../components/Header'
 
 export const StartChatScreen = ({navigation}) => {
 
@@ -189,9 +190,7 @@ export const StartChatScreen = ({navigation}) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Image style={styles.logo} source={require('../images/SM.png')}/>
-            </View>
+            <Header/>
             <ScrollView style={styles.content}>
                 <TouchableOpacity style={{flexDirection: "row", justifyContent: 'space-between', marginLeft: '10%', marginRight: '10%', backgroundColor: 'white', paddingLeft: '1%', borderRadius: 20, paddingTop: '1%', paddingBottom: '1%'}}
                 onPress={() => {navigation.navigate('StartNewChat')}}>

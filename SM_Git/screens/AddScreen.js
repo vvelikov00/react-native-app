@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../src/supabaseClient';
 import { Button } from 'react-native';
 import styles from '../styles/mainScreens'
+import { Header } from '../components/Header'
 
 export const AddScreen = ({navigation}) => {
     const [loading, setLoading] = useState(true)
@@ -132,10 +133,7 @@ export const AddScreen = ({navigation}) => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                
-                <Image style={styles.logo} source={require('../images/SM.png')}/>
-            </View>
+            <Header/>
             <ScrollView style={styles.content}>
 
       {image && <Image source={{uri: image}}
